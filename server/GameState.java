@@ -1,0 +1,144 @@
+import java.util.ArrayList;
+import java.util.List;
+
+public class GameState {
+    // Lista que guarda todos los jugadores conectados al juego.
+    private List<Player> players;
+
+    // Lista que guarda todos los aliens del juego
+    private List<Alien> aliens;
+
+    // Lista que guarda todos los bunkers del juego
+    private List<Bunker> bunkers;
+
+    //Velocidad actual de los aliens
+    private int alienSpeed;
+
+    //Variable que controla el identificador del sigueinte alien que se cree
+    private int nextAlienId;
+
+    //Constructor de la clase GameState.
+    //Aqui se inicializan las listas y los valores iniciales del juego.
+    public GameState() {
+        players = new ArrayList<>(); // Lista de juegadores
+        aliens = new ArrayList<>();  // Lista de Aliens
+        bunkers = new ArrayList<>(); // Lista de bunkers
+
+
+        alienSpeed = 100; // Velocidad inicial de los aliens.
+        nextAlienId = 1;  // El primer alien tendra el id 1.
+
+        createInitialBunkers(); // Se crean los bunkers iniciales.
+        createInitialAliens();  // Se crean los aliens iniciales.
+    }
+    // Metodo privado que crea los bunkers iniciales del juego
+    private void createInitialBunkers() {
+        // Se crean los 4 bunkers o escudos de proteccion que indica la descripcion de juego
+        for (int i = 1; i <= 4; i++) {
+            bunkers.add(new Bunker(i)); // Se agrega un bunker con id 1, 2 y 3.
+        }
+    }
+    //Metodo privado que crea los aliens iniciales del juego.
+    private void createInitialAliens() {
+        createAlien(1, 1, 10); // Alien en posicion x = 1, y = 1, con valor de 10 puntos.
+        createAlien(2, 1, 20); // Alien en posicion x = 2, y = 1, con valor de 20 puntos.
+        createAlien(3, 1, 40); // Alien en posicion x = 3, y = 1, con valor de 40 puntos.
+    }
+
+    // Metodo sincronizado que agrega un nuevo jugador al juego.
+    // synchronized evita problemas si varios clientes intentan modificar el estado al mismo tiempo.
+    public synchronized Player addPlayer() {
+        Player player = new Player(players.size() +1);  // Se crea un jugador con un id segun la cantidad actual de jugadores.
+        players.add(player); // Se agrega un jugador a la lista
+        return player; // Se devuelve el jugador creado
+    }
+
+    //Metodo sincronizado que crea un nuevo alien
+    public synchronized void createAlien(int x, int y, int points) {
+        Alien alien = new Alien(nextAlienId++, x, y, points); //Se crea el alien y luego aumenta el id para el siguiente.
+        aliens.add(alien); //Se agrega el alien a la lista de aliens
+    }
+
+    // Metodo sincronizado que mueve un jugador hacia la izquierda.
+    public synchronized void movePlayerLeft(int playerId){
+        Player player = getPlayerById(playerId); // Se busca el jugador por su id.
+
+        if (player != null) { // Si el jugador existe, se mueve a la izquierda
+            player.moveLeft();
+        }
+    }
+
+    //Metodo sincronizado que mueve un jugador hacia la derecha.
+    public synchronized void movePlayerRight(int playerId){
+        Player player = getPlayerById(playerId); // Se busca el jugador por su id.
+
+        if (player != null) { // Si el jugador existe, se mueve a la derecha.
+            player.moveRight();
+        }
+    }
+
+    //Metodo sincronizado que permite eliminar un alien y sume puntos al jugador
+    public synchronized void killAlien(int playerId, int alienId){
+        Player player = getPlayerById(playerId); // Se busca el jugadorp por su id
+        Alien alien = getAlienById(alienId); // Se busca el alien por su id.
+
+        // Se verifica que el jugador exista, que el alien exista y que el alien este vivo.
+        if(player != null && alien != null && alien.isAlive()) {
+            alien.kill(); // Se marca el alien como muerto.
+            player.addScore(alien.getPoints()); // Se suma los puntos del alien al jugador.
+        }
+    }
+
+    // Metodo privado que busca un jugador por su id.
+    private Player getPlayerById(int playerId) {
+        for (Player player : players) {
+            if (player.getId() == playerId) {
+                return player; // Si encuentra el jugador, lo devuelve
+            }
+        }
+        return null; // Si no lo encuentra, devuelve null.
+    }
+
+    // Metodo privado que busca un alien por su id.
+    private Alien getAlienById(int alienId) {
+        for (Alien alien : aliens) {
+            if (alien.getId() == alienId) {
+                return alien; // Si encuentra el alien, lo devuelve.
+            }
+        }
+        return null; // Si no lo encuentra, devuelve nulo.
+    }
+
+    // Metodo sincronizado que genera un mensaje con el estado actual del juego.
+    public synchronized String getStateMessage() {
+        StringBuilder message = new StringBuilder(); //Se usa para construir el mensaje de forma eficiente.
+        message.append("STATE: "); // Indica que el mensaje contiene el estado del juego.
+
+        // Se agrega la informacion de cada jugador al mensaje
+        for (Player player : players) {
+            message.append("PLAYER ") // Mensaje del jugador
+                    .append(player.getId()).append(" ") // Id del jugador
+                    .append(player.getX()).append(" ")  // Posicion del jugador
+                    .append(player.getLives()).append(" ") // Vidas del jugador
+                    .append(player.getScore()).append(" "); //Puntaje del jugador
+
+        }
+
+        // Se agrega la informacion de cada alien al mensaje.
+        for (Alien alien : aliens) {
+            message.append(alien.toMessage()).append(" ");
+        }
+
+        // Se agrega la informacion de cada buker al mensaje
+        for (Bunker bunker : bunkers) {
+            message.append(bunker.toMessage()).append(" ");
+        }
+
+        // Se agrega la velocidad acutal de los aliens
+        message.append("SPEED ").append(alienSpeed);
+
+        // Se devuelve el mensaje como texto.
+        return message.toString();
+
+    }
+}
