@@ -1,5 +1,6 @@
+package Modelos;
 
-// Clase Alien que nos permite crear los alien, que son los enemigos del juego
+// Clase modelos.Alien que nos permite crear los alien, que son los enemigos del juego
 public class Alien {
     private int id; //Variable privada. Sirve para identificar el alien. Ejemplo: alien1, alien2
     private int x;  // Se declara variable privada llamada x, es la posicion horizontal del alien.

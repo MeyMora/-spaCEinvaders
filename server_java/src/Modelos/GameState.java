@@ -1,3 +1,5 @@
+package Modelos;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +19,7 @@ public class GameState {
     //Variable que controla el identificador del sigueinte alien que se cree
     private int nextAlienId;
 
-    //Constructor de la clase GameState.
+    //Constructor de la clase modelos.GameState.
     //Aqui se inicializan las listas y los valores iniciales del juego.
     public GameState() {
         players = new ArrayList<>(); // Lista de juegadores
@@ -40,9 +42,9 @@ public class GameState {
     }
     //Metodo privado que crea los aliens iniciales del juego.
     private void createInitialAliens() {
-        createAlien(1, 1, 10); // Alien en posicion x = 1, y = 1, con valor de 10 puntos.
-        createAlien(2, 1, 20); // Alien en posicion x = 2, y = 1, con valor de 20 puntos.
-        createAlien(3, 1, 40); // Alien en posicion x = 3, y = 1, con valor de 40 puntos.
+        createAlien(1, 1, 10); // modelos.Alien en posicion x = 1, y = 1, con valor de 10 puntos.
+        createAlien(2, 1, 20); // modelos.Alien en posicion x = 2, y = 1, con valor de 20 puntos.
+        createAlien(3, 1, 40); // modelos.Alien en posicion x = 3, y = 1, con valor de 40 puntos.
     }
 
     // Metodo sincronizado que agrega un nuevo jugador al juego.

@@ -1,3 +1,5 @@
+package Modelos;
+
 //Clase publica Jugador
 public class Player { // Es como el molde para crear jugadores
     private int id; //Variable privada llamada id, para identificar al jugador

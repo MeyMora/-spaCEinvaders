@@ -1,8 +1,10 @@
+package Modelos;
+
 public class Bunker {
     private int id; // Variable id para identificar cual bunker es, si el 1, 2,3...
     private int health; //Variable privada que es la vida actual del bunker
 
-    public Bunker(int id){  //Constructor de la clase de Bunker
+    public Bunker(int id){  //Constructor de la clase de modelos.Bunker
         this.id = id; // Se asigna el identificador del bunker.
         this.health = 100; // la vida del bunker siempre inicia en 100
     }
