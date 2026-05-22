@@ -109,6 +109,11 @@ public class ClientHandler extends Thread {
             gameState.killAlien(player.getId(), alienId);
         }
 
+        else if (message.equals("PLAYER_HIT")) {
+            gameState.playerHit(player.getId());
+            System.out.println("Jugador " + player.getId() + " recibió daño");
+        }
+
         else {
             System.out.println("Comando no reconocido: " + message);
         }

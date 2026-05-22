@@ -143,4 +143,11 @@ public class GameState {
         return message.toString();
 
     }
+    public synchronized void playerHit(int playerId) {
+        Player player = getPlayerById(playerId);
+
+        if (player != null) {
+            player.loseLife();
+        }
+    }
 }
