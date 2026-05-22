@@ -72,6 +72,7 @@ public class TestClient {
             return;
         }
 
+
         String[] partes = respuesta.split("\\s+");
 
         System.out.println("----- ESTADO DEL JUEGO -----");
@@ -129,6 +130,13 @@ public class TestClient {
 
                 System.out.println("Velocidad aliens: " + velocidad);
 
+                i += 2;
+            }
+
+            else if (tipo.equals("GAME_OVER")) {
+                boolean gameOver = Boolean.parseBoolean(partes[i + 1]);
+
+                System.out.println("Game over: " + gameOver);
                 i += 2;
             }
 

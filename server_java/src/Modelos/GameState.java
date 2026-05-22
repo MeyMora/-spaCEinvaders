@@ -19,6 +19,9 @@ public class GameState {
     //Variable que controla el identificador del sigueinte alien que se cree
     private int nextAlienId;
 
+    //Variable que controla si el jugador perdio o no.
+    private boolean gameOver;
+
     //Constructor de la clase modelos.GameState.
     //Aqui se inicializan las listas y los valores iniciales del juego.
     public GameState() {
@@ -29,6 +32,7 @@ public class GameState {
 
         alienSpeed = 100; // Velocidad inicial de los aliens.
         nextAlienId = 1;  // El primer alien tendra el id 1.
+        gameOver = false; // Se inicializa la perdida del juego en false.
 
         createInitialBunkers(); // Se crean los bunkers iniciales.
         createInitialAliens();  // Se crean los aliens iniciales.
@@ -136,8 +140,9 @@ public class GameState {
             message.append(bunker.toMessage()).append(" ");
         }
 
-        // Se agrega la velocidad acutal de los aliens
-        message.append("SPEED ").append(alienSpeed);
+        // Se agrega la velocidad actual de los aliens
+        message.append("SPEED ").append(alienSpeed).append(" ");
+        message.append("GAME_OVER ").append(gameOver);
 
         // Se devuelve el mensaje como texto.
         return message.toString();
@@ -146,8 +151,15 @@ public class GameState {
     public synchronized void playerHit(int playerId) {
         Player player = getPlayerById(playerId);
 
-        if (player != null) {
+        if (player != null && !gameOver) {
             player.loseLife();
+            if (player.getLives() <= 0) {
+                gameOver = true;
+            }
         }
+    }
+
+    public synchronized boolean isGameOver(){
+        return gameOver;
     }
 }

@@ -74,4 +74,6 @@ public class Player { // Es como el molde para crear jugadores
     public void addLife(){
         lives++; // Aumenta la vida en 1.
     }
+
+
 }

@@ -73,8 +73,12 @@ public class ClientHandler extends Thread {
 
         System.out.println("Procesando comando: [" + message + "]");
 
+        if (gameState.isGameOver()){
+            System.out.println("El juego ya termino. Comando ignorado.");
+            return;
+        }
         String normalizedMessage = message.toUpperCase().replace("_", " ");
-        String[] parts = normalizedMessage.split("\\s+");
+        String[] parts = message.split(" ");
 
         if (parts.length == 0) {
             return;
