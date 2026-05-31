@@ -89,9 +89,14 @@ public class GameState {
         Alien alien = getAlienById(alienId); // Se busca el alien por su id.
 
         // Se verifica que el jugador exista, que el alien exista y que el alien este vivo.
-        if(player != null && alien != null && alien.isAlive()) {
+        if(player != null && alien != null && alien.isAlive() && !gameOver) {
             alien.kill(); // Se marca el alien como muerto.
             player.addScore(alien.getPoints()); // Se suma los puntos del alien al jugador.
+
+            if (allAliensDead()){
+                resetRound(player);
+            }
+
         }
     }
 
@@ -157,6 +162,26 @@ public class GameState {
                 gameOver = true;
             }
         }
+    }
+    private boolean allAliensDead() {
+        for (Alien alien : aliens) {
+            if (alien.isAlive()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    private void resetRound(Player player) {
+        player.addLife();
+
+        alienSpeed += 20;
+
+        aliens.clear();
+
+        createInitialAliens();
+
+        System.out.println("Ronda completada. Nueva velocidad: " + alienSpeed);
     }
 
     public synchronized boolean isGameOver(){

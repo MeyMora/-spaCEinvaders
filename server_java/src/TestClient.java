@@ -28,11 +28,10 @@ public class TestClient {
 
             enviarYRecibir(out, in, "MOVE LEFT");
             enviarYRecibir(out, in, "MOVE RIGHT");
-            enviarYRecibir(out, in, "SHOOT");
-            enviarYRecibir(out, in, "PLAYER_HIT");
-            enviarYRecibir(out, in, "PLAYER_HIT");
-            enviarYRecibir(out, in, "PLAYER_HIT");
-            enviarYRecibir(out, in, "ALIEN_KILLED 2");
+            enviarYRecibir(out, in, "ALIEN KILLED 1");
+            enviarYRecibir(out, in, "ALIEN KILLED 2");
+            enviarYRecibir(out, in, "ALIEN KILLED 3");
+
 
             socket.close();
 
