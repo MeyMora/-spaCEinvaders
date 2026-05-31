@@ -118,6 +118,20 @@ public class ClientHandler extends Thread {
             System.out.println("Jugador " + player.getId() + " recibió daño");
         }
 
+        else if (parts.length == 2 && parts[0].equals("SPEED")) {
+            int newSpeed = Integer.parseInt(parts[1]);
+            gameState.setAlienSpeed(newSpeed);
+
+            System.out.println("Velocidad cambiada a " + newSpeed);
+        }
+
+        else if (parts.length == 2 && parts[0].equals("BUNKERS")) {
+            int health = Integer.parseInt(parts[1]);
+            gameState.setBunkersHealth(health);
+
+            System.out.println("Estado de bunkers cambiado a " + health + "%");
+        }
+
         else {
             System.out.println("Comando no reconocido: " + message);
         }

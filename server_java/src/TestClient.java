@@ -31,6 +31,10 @@ public class TestClient {
             enviarYRecibir(out, in, "ALIEN KILLED 1");
             enviarYRecibir(out, in, "ALIEN KILLED 2");
             enviarYRecibir(out, in, "ALIEN KILLED 3");
+            enviarYRecibir(out, in, "SPEED 150");
+            enviarYRecibir(out, in, "BUNKERS 70");
+            enviarYRecibir(out, in, "BUNKERS 40");
+            enviarYRecibir(out, in, "BUNKERS 0");
 
 
             socket.close();

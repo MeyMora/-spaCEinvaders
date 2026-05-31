@@ -184,7 +184,16 @@ public class GameState {
         System.out.println("Ronda completada. Nueva velocidad: " + alienSpeed);
     }
 
+    public synchronized void setAlienSpeed(int alienSpeed) {
+        this.alienSpeed = alienSpeed;
+    }
+    public synchronized void setBunkersHealth(int health) {
+        for (Bunker bunker : bunkers) {
+            bunker.setHealth(health);
+        }
+    }
     public synchronized boolean isGameOver(){
+
         return gameOver;
     }
 }
