@@ -27,14 +27,10 @@ public class TestClient {
             System.out.println();
 
             enviarYRecibir(out, in, "MOVE LEFT");
-            enviarYRecibir(out, in, "MOVE RIGHT");
-            enviarYRecibir(out, in, "ALIEN KILLED 1");
-            enviarYRecibir(out, in, "ALIEN KILLED 2");
-            enviarYRecibir(out, in, "ALIEN KILLED 3");
             enviarYRecibir(out, in, "SPEED 150");
             enviarYRecibir(out, in, "BUNKERS 70");
-            enviarYRecibir(out, in, "BUNKERS 40");
-            enviarYRecibir(out, in, "BUNKERS 0");
+            enviarYRecibir(out, in, "CREATE ALIEN 5 2 100");
+            enviarYRecibir(out, in, "ALIEN KILLED 4");
 
 
             socket.close();

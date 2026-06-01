@@ -105,12 +105,14 @@ public class ClientHandler extends Thread {
             System.out.println("Jugador " + player.getId() + " disparó");
         }
 
-        else if (parts[0].equals("ALIEN") && parts.length >= 3 && parts[1].equals("KILLED")) {
+        else if (parts.length == 4 && parts[0].equals("ALIEN") && parts[1].equals("KILLED")) {
             int alienId = Integer.parseInt(parts[2]);
-
-            System.out.println("Jugador " + player.getId() + " eliminó al alien " + alienId);
-
-            gameState.killAlien(player.getId(), alienId);
+            boolean killed = gameState.killAlien(player.getId(), alienId);
+            if (killed) {
+                System.out.println("Jugador " + player.getId() + " eliminó al alien " + alienId);
+            } else {
+                System.out.println("No se pudo eliminar el alien " + alienId);
+            }
         }
 
         else if (message.equals("PLAYER_HIT")) {
@@ -132,9 +134,21 @@ public class ClientHandler extends Thread {
             System.out.println("Estado de bunkers cambiado a " + health + "%");
         }
 
+        else if (parts.length == 5 && parts[0].equals("CREATE") && parts[1].equals("ALIEN")) {
+            int x = Integer.parseInt(parts[2]);
+            int y = Integer.parseInt(parts[3]);
+            int points = Integer.parseInt(parts[4]);
+
+            gameState.createAlien(x, y, points);
+
+            System.out.println("Alien creado en (" + x + ", " + y + ") con " + points + " puntos");
+        }
+
         else {
             System.out.println("Comando no reconocido: " + message);
         }
+
+
     }
     private void broadcast(String message) {
         for (ClientHandler client : clients) {

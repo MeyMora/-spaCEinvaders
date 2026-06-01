@@ -84,7 +84,7 @@ public class GameState {
     }
 
     //Metodo sincronizado que permite eliminar un alien y sume puntos al jugador
-    public synchronized void killAlien(int playerId, int alienId){
+    public synchronized boolean killAlien(int playerId, int alienId){
         Player player = getPlayerById(playerId); // Se busca el jugadorp por su id
         Alien alien = getAlienById(alienId); // Se busca el alien por su id.
 
@@ -96,8 +96,10 @@ public class GameState {
             if (allAliensDead()){
                 resetRound(player);
             }
+            return true;
 
         }
+        return false;
     }
 
     // Metodo privado que busca un jugador por su id.
