@@ -222,7 +222,9 @@ public class GameState {
         return false;
     }
 
-
+    public synchronized int getPlayerCount() {
+        return players.size();
+    }
 
 
 

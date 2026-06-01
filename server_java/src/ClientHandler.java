@@ -15,6 +15,7 @@ public class ClientHandler extends Thread {
     private GameState gameState;
     private List<ClientHandler> clients;
     private Player player;
+    private boolean spectator;
 
     public ClientHandler(Socket socket, GameState gameState, List<ClientHandler> clients) {
 
@@ -34,9 +35,22 @@ public class ClientHandler extends Thread {
                     socket.getOutputStream(),
                     true
             );
-            player = gameState.addPlayer();
+            if (gameState.getPlayerCount() < 2) {
+                player = gameState.addPlayer();
+                spectator = false;
 
-            out.println("PLAYER_ID " + player.getId());;
+                out.println("PLAYER_ID " + player.getId());
+                System.out.println("Cliente asignado como jugador " + player.getId());
+                out.println(gameState.getStateMessage());
+
+
+            } else {
+                player = null;
+                spectator = true;
+
+                out.println("SPECTATOR");
+                System.out.println("Cliente asignado como espectador");
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -56,7 +70,11 @@ public class ClientHandler extends Thread {
 
             while ((message = in.readLine()) != null) {
 
-                System.out.println("Cliente " + player.getId() + " dice: " + message);
+                if (spectator) {
+                    System.out.println("Espectador dice: " + message);
+                } else {
+                    System.out.println("Cliente " + player.getId() + " dice: " + message);
+                }
                 processMessage(message);
                 broadcast(gameState.getStateMessage());
 
@@ -88,6 +106,10 @@ public class ClientHandler extends Thread {
         String[] parts = message.split("\\s+");
 
         if (parts.length == 0) {
+            return;
+        }
+        if (spectator) {
+            System.out.println("El espectador no puede ejecutar comandos.");
             return;
         }
 
@@ -133,7 +155,10 @@ public class ClientHandler extends Thread {
             }
         }
 
-        else if (message.equals("PLAYER_HIT")) {
+        else if (
+                message.equals("PLAYER_HIT") ||
+                        (parts.length == 2 && parts[0].equals("PLAYER") && parts[1].equals("HIT"))
+        ) {
             gameState.playerHit(player.getId());
             System.out.println("Jugador " + player.getId() + " recibió daño");
         }
