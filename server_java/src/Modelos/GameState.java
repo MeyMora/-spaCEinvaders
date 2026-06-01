@@ -22,6 +22,8 @@ public class GameState {
     //Variable que controla si el jugador perdio o no.
     private boolean gameOver;
 
+    private UFO ufo;
+
     //Constructor de la clase modelos.GameState.
     //Aqui se inicializan las listas y los valores iniciales del juego.
     public GameState() {
@@ -33,6 +35,8 @@ public class GameState {
         alienSpeed = 100; // Velocidad inicial de los aliens.
         nextAlienId = 1;  // El primer alien tendra el id 1.
         gameOver = false; // Se inicializa la perdida del juego en false.
+
+        ufo = null;
 
         createInitialBunkers(); // Se crean los bunkers iniciales.
         createInitialAliens();  // Se crean los aliens iniciales.
@@ -146,6 +150,10 @@ public class GameState {
         for (Bunker bunker : bunkers) {
             message.append(bunker.toMessage()).append(" ");
         }
+        if (ufo != null) {
+            message.append(ufo.toMessage()).append(" ");
+        }
+
 
         // Se agrega la velocidad actual de los aliens
         message.append("SPEED ").append(alienSpeed).append(" ");
@@ -198,4 +206,25 @@ public class GameState {
 
         return gameOver;
     }
+    public synchronized void createUFO(String direction, int points) {
+        ufo = new UFO(direction, points);
+    }
+
+    public synchronized boolean destroyUFO(int playerId) {
+        Player player = getPlayerById(playerId);
+
+        if (player != null && ufo != null && ufo.isActive() && !gameOver) {
+            ufo.destroy();
+            player.addScore(ufo.getPoints());
+            return true;
+        }
+
+        return false;
+    }
+
+
+
+
+
+
 }

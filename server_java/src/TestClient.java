@@ -31,7 +31,8 @@ public class TestClient {
             enviarYRecibir(out, in, "BUNKERS 70");
             enviarYRecibir(out, in, "CREATE ALIEN 5 2 100");
             enviarYRecibir(out, in, "ALIEN KILLED 4");
-
+            enviarYRecibir(out, in, "CREATE UFO I-D 1500");
+            enviarYRecibir(out, in, "UFO KILLED");
 
             socket.close();
 
@@ -137,6 +138,18 @@ public class TestClient {
 
                 System.out.println("Game over: " + gameOver);
                 i += 2;
+            }
+            else if (tipo.equals("UFO")) {
+                String direction = partes[i + 1];
+                int points = Integer.parseInt(partes[i + 2]);
+                boolean active = Boolean.parseBoolean(partes[i + 3]);
+
+                System.out.println("OVNI:");
+                System.out.println("  Direccion: " + direction);
+                System.out.println("  Puntos: " + points);
+                System.out.println("  Activo: " + active);
+
+                i += 4;
             }
 
             else {

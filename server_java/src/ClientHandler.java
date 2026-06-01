@@ -144,9 +144,30 @@ public class ClientHandler extends Thread {
             System.out.println("Alien creado en (" + x + ", " + y + ") con " + points + " puntos");
         }
 
+        else if (parts.length == 4 && parts[0].equals("CREATE") && parts[1].equals("UFO")) {
+            String direction = parts[2];
+            int points = Integer.parseInt(parts[3]);
+
+            gameState.createUFO(direction, points);
+
+            System.out.println("OVNI creado con direccion " + direction + " y " + points + " puntos");
+        }
+
+        else if (message.equals("UFO KILLED")) {
+            boolean killed = gameState.destroyUFO(player.getId());
+
+            if (killed) {
+                System.out.println("Jugador " + player.getId() + " eliminó el OVNI");
+            } else {
+                System.out.println("No se pudo eliminar el OVNI");
+            }
+        }
+
         else {
             System.out.println("Comando no reconocido: " + message);
         }
+
+
 
 
     }
