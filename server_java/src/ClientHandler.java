@@ -50,6 +50,10 @@ public class ClientHandler extends Thread {
 
             String message;
 
+            // Enviar estado inicial al cliente que se conecta
+            sendMessage(gameState.getStateMessage());
+
+
             while ((message = in.readLine()) != null) {
 
                 System.out.println("Cliente " + player.getId() + " dice: " + message);
@@ -60,8 +64,11 @@ public class ClientHandler extends Thread {
 
         } catch (Exception e) {
 
-            System.out.println("Cliente desconectado");
+            System.out.println("Cliente" + player.getId() + "desconectado");
 
+        } finally{
+            clients.remove(this);
+            closeConnection();
         }
     }
     private void processMessage(String message) {
@@ -78,7 +85,7 @@ public class ClientHandler extends Thread {
             return;
         }
         String normalizedMessage = message.toUpperCase().replace("_", " ");
-        String[] parts = message.split(" ");
+        String[] parts = message.split("\\s+");
 
         if (parts.length == 0) {
             return;
@@ -105,9 +112,20 @@ public class ClientHandler extends Thread {
             System.out.println("Jugador " + player.getId() + " disparó");
         }
 
-        else if (parts.length == 4 && parts[0].equals("ALIEN") && parts[1].equals("KILLED")) {
-            int alienId = Integer.parseInt(parts[2]);
+        else if (
+                (parts.length == 3 && parts[0].equals("ALIEN") && parts[1].equals("KILLED")) ||
+                        (parts.length == 2 && parts[0].equals("ALIEN_KILLED"))
+        ) {
+            int alienId;
+
+            if (parts[0].equals("ALIEN_KILLED")) {
+                alienId = Integer.parseInt(parts[1]);
+            } else {
+                alienId = Integer.parseInt(parts[2]);
+            }
+
             boolean killed = gameState.killAlien(player.getId(), alienId);
+
             if (killed) {
                 System.out.println("Jugador " + player.getId() + " eliminó al alien " + alienId);
             } else {
@@ -172,12 +190,23 @@ public class ClientHandler extends Thread {
 
     }
     private void broadcast(String message) {
-        for (ClientHandler client : clients) {
-            client.sendMessage(message);
+        synchronized (clients) {
+            for (ClientHandler client : clients) {
+                client.sendMessage(message);
+            }
         }
+
     }
 
     public void sendMessage(String message) {
         out.println(message);
+    }
+
+    private void closeConnection() {
+        try{
+            socket.close();
+        } catch (Exception e){
+            System.out.println("No se pudo cerrar el socket");
+        }
     }
 }
