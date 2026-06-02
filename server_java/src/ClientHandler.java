@@ -6,8 +6,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java. util.List;
+import Patrones.GameObserver;
 
-public class ClientHandler extends Thread {
+public class ClientHandler extends Thread implements GameObserver {
 
     private Socket socket;
     private BufferedReader in;
@@ -23,6 +24,7 @@ public class ClientHandler extends Thread {
         this.gameState = gameState;
         this.clients = clients;
 
+
         try {
 
             in = new BufferedReader(
@@ -35,6 +37,10 @@ public class ClientHandler extends Thread {
                     socket.getOutputStream(),
                     true
             );
+
+            gameState.addObserver(this);
+
+
             if (gameState.getPlayerCount() < 2) {
                 player = gameState.addPlayer();
                 spectator = false;
@@ -76,7 +82,7 @@ public class ClientHandler extends Thread {
                     System.out.println("Cliente " + player.getId() + " dice: " + message);
                 }
                 processMessage(message);
-                broadcast(gameState.getStateMessage());
+                gameState.notifyObservers();
 
             }
 
@@ -85,6 +91,7 @@ public class ClientHandler extends Thread {
             System.out.println("Cliente" + player.getId() + "desconectado");
 
         } finally{
+            gameState.removeObserver(this);
             clients.remove(this);
             closeConnection();
         }
@@ -232,6 +239,13 @@ public class ClientHandler extends Thread {
             socket.close();
         } catch (Exception e){
             System.out.println("No se pudo cerrar el socket");
+
+
         }
+    }
+
+    @Override
+    public void update(String gameStateMessage) {
+        sendMessage(gameStateMessage);
     }
 }

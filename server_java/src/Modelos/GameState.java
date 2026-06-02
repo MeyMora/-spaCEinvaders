@@ -3,7 +3,10 @@ package Modelos;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GameState {
+import Patrones.GameObserver;
+import Patrones.GameSubject;
+
+public class GameState implements GameSubject{
     // Lista que guarda todos los jugadores conectados al juego.
     private List<Player> players;
 
@@ -24,6 +27,8 @@ public class GameState {
 
     private UFO ufo;
 
+    private List<GameObserver> observers;
+
     //Constructor de la clase modelos.GameState.
     //Aqui se inicializan las listas y los valores iniciales del juego.
     public GameState() {
@@ -31,6 +36,7 @@ public class GameState {
         aliens = new ArrayList<>();  // Lista de Aliens
         bunkers = new ArrayList<>(); // Lista de bunkers
 
+        observers = new ArrayList<>();
 
         alienSpeed = 100; // Velocidad inicial de los aliens.
         nextAlienId = 1;  // El primer alien tendra el id 1.
@@ -226,7 +232,30 @@ public class GameState {
         return players.size();
     }
 
+    @Override
+    public synchronized void addObserver(GameObserver observer) {
+        observers.add(observer);
+    }
 
+    @Override
+    public synchronized void removeObserver(GameObserver observer) {
+        observers.remove(observer);
+    }
+
+    @Override
+    public void notifyObservers() {
+        String stateMessage;
+        List<GameObserver> observersCopy;
+
+        synchronized (this) {
+            stateMessage = getStateMessage();
+            observersCopy = new ArrayList<>(observers);
+        }
+
+        for (GameObserver observer : observersCopy) {
+            observer.update(stateMessage);
+        }
+    }
 
 
 }
