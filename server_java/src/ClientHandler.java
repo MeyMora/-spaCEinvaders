@@ -5,10 +5,11 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java. util.List;
+import java.util.List;
 import Patrones.GameObserver;
+import Patrones.ThreadExecutor;
 
-public class ClientHandler extends Thread implements GameObserver {
+public class ClientHandler implements Runnable, GameObserver {
 
     private Socket socket;
     private BufferedReader in;
@@ -57,6 +58,9 @@ public class ClientHandler extends Thread implements GameObserver {
                 out.println("SPECTATOR");
                 System.out.println("Cliente asignado como espectador");
             }
+            
+            // Se ejecuta la tarea usando el Singleton ThreadExecutor
+            ThreadExecutor.getInstance().execute(this);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -82,15 +86,17 @@ public class ClientHandler extends Thread implements GameObserver {
                     System.out.println("Cliente " + player.getId() + " dice: " + message);
                 }
                 processMessage(message);
-                gameState.notifyObservers();
 
             }
 
         } catch (Exception e) {
+            if (player != null) {
+                System.out.println("Cliente " + player.getId() + " desconectado");
+            } else {
+                System.out.println("Espectador desconectado");
+            }
 
-            System.out.println("Cliente" + player.getId() + "desconectado");
-
-        } finally{
+        } finally {
             gameState.removeObserver(this);
             clients.remove(this);
             closeConnection();
@@ -102,6 +108,10 @@ public class ClientHandler extends Thread implements GameObserver {
         }
 
         message = message.trim();
+
+        if (message.isEmpty()) {
+            return;
+        }
 
         System.out.println("Procesando comando: [" + message + "]");
 
@@ -198,7 +208,7 @@ public class ClientHandler extends Thread implements GameObserver {
             String direction = parts[2];
             int points = Integer.parseInt(parts[3]);
 
-            gameState.createUFO(direction, points);
+            gameState.createUFO(1, 0, 0, direction, points);
 
             System.out.println("OVNI creado con direccion " + direction + " y " + points + " puntos");
         }

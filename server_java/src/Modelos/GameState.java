@@ -2,11 +2,15 @@ package Modelos;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import Patrones.GameObserver;
 import Patrones.GameSubject;
 
-public class GameState implements GameSubject{
+import Patrones.AbstractFactory.GameElementFactory;
+import Patrones.AbstractFactory.ClassicGameElementFactory;
+import Patrones.AbstractFactory.HardGameElementFactory;
+
+
+public class GameState extends GameSubject {
     // Lista que guarda todos los jugadores conectados al juego.
     private List<Player> players;
 
@@ -27,21 +31,27 @@ public class GameState implements GameSubject{
 
     private UFO ufo;
 
-    private List<GameObserver> observers;
+    private int nextUfoId;
+
+    private GameElementFactory gameElementFactory;
+
 
     //Constructor de la clase modelos.GameState.
     //Aqui se inicializan las listas y los valores iniciales del juego.
     public GameState() {
+        super();  // Inicializa la lista de observers
         players = new ArrayList<>(); // Lista de juegadores
         aliens = new ArrayList<>();  // Lista de Aliens
         bunkers = new ArrayList<>(); // Lista de bunkers
 
-        observers = new ArrayList<>();
+
+        // Se define la familia inicial de objetos del juego
+        gameElementFactory = new ClassicGameElementFactory();
 
         alienSpeed = 100; // Velocidad inicial de los aliens.
         nextAlienId = 1;  // El primer alien tendra el id 1.
         gameOver = false; // Se inicializa la perdida del juego en false.
-
+        nextUfoId = 1;
         ufo = null;
 
         createInitialBunkers(); // Se crean los bunkers iniciales.
@@ -50,15 +60,17 @@ public class GameState implements GameSubject{
     // Metodo privado que crea los bunkers iniciales del juego
     private void createInitialBunkers() {
         // Se crean los 4 bunkers o escudos de proteccion que indica la descripcion de juego
-        for (int i = 1; i <= 4; i++) {
-            bunkers.add(new Bunker(i)); // Se agrega un bunker con id 1, 2 y 3.
-        }
+            bunkers.add(gameElementFactory.createBunker(1, 10, 20));
+            bunkers.add(gameElementFactory.createBunker(2, 30, 20));
+            bunkers.add(gameElementFactory.createBunker(3, 50, 20));
+            bunkers.add(gameElementFactory.createBunker(4, 70, 20));
+
     }
     //Metodo privado que crea los aliens iniciales del juego.
     private void createInitialAliens() {
-        createAlien(1, 1, 10); // modelos.Alien en posicion x = 1, y = 1, con valor de 10 puntos.
-        createAlien(2, 1, 20); // modelos.Alien en posicion x = 2, y = 1, con valor de 20 puntos.
-        createAlien(3, 1, 40); // modelos.Alien en posicion x = 3, y = 1, con valor de 40 puntos.
+        createAlienWithoutNotify(1, 1, 10);
+        createAlienWithoutNotify(2, 1, 20);
+        createAlienWithoutNotify(3, 1, 40);
     }
 
     // Metodo sincronizado que agrega un nuevo jugador al juego.
@@ -71,8 +83,8 @@ public class GameState implements GameSubject{
 
     //Metodo sincronizado que crea un nuevo alien
     public synchronized void createAlien(int x, int y, int points) {
-        Alien alien = new Alien(nextAlienId++, x, y, points); //Se crea el alien y luego aumenta el id para el siguiente.
-        aliens.add(alien); //Se agrega el alien a la lista de aliens
+        createAlienWithoutNotify(x, y, points);
+        notifyObservers();
     }
 
     // Metodo sincronizado que mueve un jugador hacia la izquierda.
@@ -81,6 +93,7 @@ public class GameState implements GameSubject{
 
         if (player != null) { // Si el jugador existe, se mueve a la izquierda
             player.moveLeft();
+            notifyObservers();
         }
     }
 
@@ -90,6 +103,7 @@ public class GameState implements GameSubject{
 
         if (player != null) { // Si el jugador existe, se mueve a la derecha.
             player.moveRight();
+            notifyObservers();
         }
     }
 
@@ -105,6 +119,8 @@ public class GameState implements GameSubject{
 
             if (allAliensDead()){
                 resetRound(player);
+            }else{
+                notifyObservers();
             }
             return true;
 
@@ -177,6 +193,7 @@ public class GameState implements GameSubject{
             if (player.getLives() <= 0) {
                 gameOver = true;
             }
+            notifyObservers();
         }
     }
     private boolean allAliensDead() {
@@ -193,27 +210,43 @@ public class GameState implements GameSubject{
 
         alienSpeed += 20;
 
+        // A partir de cierta velocidad se cambia la familia de objetos del juego.
+        // Esto permite que los nuevos elementos creados por la fábrica tengan otra configuración.
+        // Por ejemplo, en HardGameElementFactory los bunkers pueden iniciar con menos vida.
+        if (alienSpeed >= 140) {
+            gameElementFactory = new HardGameElementFactory();
+        }
+
         aliens.clear();
+        bunkers.clear();
 
         createInitialAliens();
+        createInitialBunkers();
 
-        System.out.println("Ronda completada. Nueva velocidad: " + alienSpeed);
+        System.out.println(
+                "Ronda completada. Nueva velocidad: " + alienSpeed +
+                        ". Nueva vida de bunkers: " + getBunkersHealthMessage()
+        );
+
+        notifyObservers();
     }
-
     public synchronized void setAlienSpeed(int alienSpeed) {
         this.alienSpeed = alienSpeed;
+        notifyObservers();
     }
     public synchronized void setBunkersHealth(int health) {
         for (Bunker bunker : bunkers) {
             bunker.setHealth(health);
         }
+        notifyObservers();
     }
     public synchronized boolean isGameOver(){
 
         return gameOver;
     }
-    public synchronized void createUFO(String direction, int points) {
-        ufo = new UFO(direction, points);
+    public synchronized void createUFO(int id, int x, int y,String direction, int points) {
+        ufo = gameElementFactory.createUFO(nextUfoId++, x, y, direction, points);
+        notifyObservers();
     }
 
     public synchronized boolean destroyUFO(int playerId) {
@@ -222,6 +255,8 @@ public class GameState implements GameSubject{
         if (player != null && ufo != null && ufo.isActive() && !gameOver) {
             ufo.destroy();
             player.addScore(ufo.getPoints());
+
+            notifyObservers();
             return true;
         }
 
@@ -232,15 +267,6 @@ public class GameState implements GameSubject{
         return players.size();
     }
 
-    @Override
-    public synchronized void addObserver(GameObserver observer) {
-        observers.add(observer);
-    }
-
-    @Override
-    public synchronized void removeObserver(GameObserver observer) {
-        observers.remove(observer);
-    }
 
     @Override
     public void notifyObservers() {
@@ -255,6 +281,26 @@ public class GameState implements GameSubject{
         for (GameObserver observer : observersCopy) {
             observer.update(stateMessage);
         }
+    }
+
+    private String getBunkersHealthMessage() {
+        StringBuilder message = new StringBuilder();
+
+        for (Bunker bunker : bunkers) {
+            message.append("Bunker ")
+                    .append(bunker.getId())
+                    .append(": ")
+                    .append(bunker.getHealth())
+                    .append(" | ");
+        }
+
+        return message.toString();
+    }
+
+    private Alien createAlienWithoutNotify(int x, int y, int points) {
+        Alien alien = gameElementFactory.createAlienByPoints(nextAlienId++, x, y, points);
+        aliens.add(alien);
+        return alien;
     }
 
 

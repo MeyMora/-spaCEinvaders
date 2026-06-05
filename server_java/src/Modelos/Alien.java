@@ -1,7 +1,7 @@
 package Modelos;
 
 // Clase modelos.Alien que nos permite crear los alien, que son los enemigos del juego
-public class Alien {
+public abstract class Alien {
     private int id; //Variable privada. Sirve para identificar el alien. Ejemplo: alien1, alien2
     private int x;  // Se declara variable privada llamada x, es la posicion horizontal del alien.
     private int y;  // Se declara una variable privada llamada y. Posicion vertical del alien.
@@ -37,4 +37,6 @@ public class Alien {
     public String toMessage() {
         return "ALIEN " + id +" "+x + " " + y + " " +points + " " + alive ;
     }
+
+    public abstract  String getTipo();
 }
