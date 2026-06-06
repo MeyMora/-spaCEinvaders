@@ -48,7 +48,6 @@ public class ClientHandler extends GameObserver implements Runnable {
 
                 out.println("PLAYER_ID " + player.getId());
                 System.out.println("Cliente asignado como jugador " + player.getId());
-                out.println(gameState.getStateMessage());
 
 
             } else {
@@ -119,7 +118,6 @@ public class ClientHandler extends GameObserver implements Runnable {
             System.out.println("El juego ya termino. Comando ignorado.");
             return;
         }
-        String normalizedMessage = message.toUpperCase().replace("_", " ");
         String[] parts = message.split("\\s+");
 
         if (parts.length == 0) {
@@ -188,7 +186,7 @@ public class ClientHandler extends GameObserver implements Runnable {
         }
 
         else if (parts.length == 2 && parts[0].equals("BUNKERS")) {
-            int health = Integer.parseInt(parts[1]);
+            int health = Integer.parseInt(parts[1].replace("%", ""));
             gameState.setBunkersHealth(health);
 
             System.out.println("Estado de bunkers cambiado a " + health + "%");
@@ -213,7 +211,7 @@ public class ClientHandler extends GameObserver implements Runnable {
             System.out.println("OVNI creado con direccion " + direction + " y " + points + " puntos");
         }
 
-        else if (message.equals("UFO KILLED")) {
+        else if (parts.length >= 2 && parts[0].equals("UFO") && parts[1].equals("KILLED")) {
             boolean killed = gameState.destroyUFO(player.getId());
 
             if (killed) {
