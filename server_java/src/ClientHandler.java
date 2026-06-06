@@ -9,7 +9,7 @@ import java.util.List;
 import Patrones.GameObserver;
 import Patrones.ThreadExecutor;
 
-public class ClientHandler implements Runnable, GameObserver {
+public class ClientHandler extends GameObserver implements Runnable {
 
     private Socket socket;
     private BufferedReader in;

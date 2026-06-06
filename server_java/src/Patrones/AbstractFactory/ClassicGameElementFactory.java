@@ -25,20 +25,6 @@ public class ClassicGameElementFactory extends GameElementFactory {
     }
 
     @Override
-    public Alien createAlienByPoints(int id, int x, int y, int puntos) {
-        switch (puntos) {
-            case 10:
-                return createCalamarAlien(id, x, y);
-            case 20:
-                return createCangrejoAlien(id, x, y);
-            case 40:
-                return createPulpoAlien(id, x, y);
-            default:
-                throw new IllegalArgumentException("Puntos de alien no válidos: " + puntos);
-        }
-    }
-
-    @Override
     public UFO createUFO(int id, int x, int y, String direccion, int puntos) {
         return new UFO(id, x, y, direccion, puntos);
     }
