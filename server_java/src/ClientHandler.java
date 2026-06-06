@@ -97,7 +97,9 @@ public class ClientHandler extends GameObserver implements Runnable {
 
         } finally {
             gameState.removeObserver(this);
-            clients.remove(this);
+            synchronized (clients) {
+                clients.remove(this);
+            }
             closeConnection();
         }
     }
@@ -153,20 +155,24 @@ public class ClientHandler extends GameObserver implements Runnable {
                 (parts.length == 3 && parts[0].equals("ALIEN") && parts[1].equals("KILLED")) ||
                         (parts.length == 2 && parts[0].equals("ALIEN_KILLED"))
         ) {
-            int alienId;
+            try {
+                int alienId;
 
-            if (parts[0].equals("ALIEN_KILLED")) {
-                alienId = Integer.parseInt(parts[1]);
-            } else {
-                alienId = Integer.parseInt(parts[2]);
-            }
+                if (parts[0].equals("ALIEN_KILLED")) {
+                    alienId = Integer.parseInt(parts[1]);
+                } else {
+                    alienId = Integer.parseInt(parts[2]);
+                }
 
-            boolean killed = gameState.killAlien(player.getId(), alienId);
+                boolean killed = gameState.killAlien(player.getId(), alienId);
 
-            if (killed) {
-                System.out.println("Jugador " + player.getId() + " eliminó al alien " + alienId);
-            } else {
-                System.out.println("No se pudo eliminar el alien " + alienId);
+                if (killed) {
+                    System.out.println("Jugador " + player.getId() + " eliminó al alien " + alienId);
+                } else {
+                    System.out.println("No se pudo eliminar el alien " + alienId);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("ID de alien inválido: " + message);
             }
         }
 
@@ -179,36 +185,46 @@ public class ClientHandler extends GameObserver implements Runnable {
         }
 
         else if (parts.length == 2 && parts[0].equals("SPEED")) {
-            int newSpeed = Integer.parseInt(parts[1]);
-            gameState.setAlienSpeed(newSpeed);
-
-            System.out.println("Velocidad cambiada a " + newSpeed);
+            try {
+                int newSpeed = Integer.parseInt(parts[1]);
+                gameState.setAlienSpeed(newSpeed);
+                System.out.println("Velocidad cambiada a " + newSpeed);
+            } catch (NumberFormatException e) {
+                System.out.println("Valor de velocidad inválido: " + parts[1]);
+            }
         }
 
         else if (parts.length == 2 && parts[0].equals("BUNKERS")) {
-            int health = Integer.parseInt(parts[1].replace("%", ""));
-            gameState.setBunkersHealth(health);
-
-            System.out.println("Estado de bunkers cambiado a " + health + "%");
+            try {
+                int health = Integer.parseInt(parts[1].replace("%", ""));
+                gameState.setBunkersHealth(health);
+                System.out.println("Estado de bunkers cambiado a " + health + "%");
+            } catch (NumberFormatException e) {
+                System.out.println("Valor de bunker inválido: " + parts[1]);
+            }
         }
 
         else if (parts.length == 5 && parts[0].equals("CREATE") && parts[1].equals("ALIEN")) {
-            int x = Integer.parseInt(parts[2]);
-            int y = Integer.parseInt(parts[3]);
-            int points = Integer.parseInt(parts[4]);
-
-            gameState.createAlien(x, y, points);
-
-            System.out.println("Alien creado en (" + x + ", " + y + ") con " + points + " puntos");
+            try {
+                int x = Integer.parseInt(parts[2]);
+                int y = Integer.parseInt(parts[3]);
+                int points = Integer.parseInt(parts[4]);
+                gameState.createAlien(x, y, points);
+                System.out.println("Alien creado en (" + x + ", " + y + ") con " + points + " puntos");
+            } catch (NumberFormatException e) {
+                System.out.println("Parámetros de alien inválidos: " + message);
+            }
         }
 
         else if (parts.length == 4 && parts[0].equals("CREATE") && parts[1].equals("UFO")) {
-            String direction = parts[2];
-            int points = Integer.parseInt(parts[3]);
-
-            gameState.createUFO(1, 0, 0, direction, points);
-
-            System.out.println("OVNI creado con direccion " + direction + " y " + points + " puntos");
+            try {
+                String direction = parts[2];
+                int points = Integer.parseInt(parts[3]);
+                gameState.createUFO(1, 0, 0, direction, points);
+                System.out.println("OVNI creado con direccion " + direction + " y " + points + " puntos");
+            } catch (NumberFormatException e) {
+                System.out.println("Parámetros de OVNI inválidos: " + message);
+            }
         }
 
         else if (parts.length >= 2 && parts[0].equals("UFO") && parts[1].equals("KILLED")) {
@@ -229,15 +245,6 @@ public class ClientHandler extends GameObserver implements Runnable {
 
 
     }
-    private void broadcast(String message) {
-        synchronized (clients) {
-            for (ClientHandler client : clients) {
-                client.sendMessage(message);
-            }
-        }
-
-    }
-
     public void sendMessage(String message) {
         out.println(message);
     }
