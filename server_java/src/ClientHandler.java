@@ -241,6 +241,11 @@ public class ClientHandler extends GameObserver implements Runnable {
             }
         }
 
+        else if (parts[0].equals("ALIENS_REACHED")) {
+            gameState.aliensLlegaronBase();
+            System.out.println("Jugador " + player.getId() + " reportó que los aliens llegaron al cañón");
+        }
+
         else if (parts.length >= 2 && parts[0].equals("UFO") && parts[1].equals("KILLED")) {
             boolean killed = gameState.destroyUFO(player.getId());
 

@@ -30,6 +30,7 @@ public class TestClientInteractive {
             System.out.println("  ALIEN KILLED <id>");
             System.out.println("  PLAYER HIT");
             System.out.println("  BUNKER HIT <id>");
+            System.out.println("  ALIENS_REACHED");
             System.out.println("  UFO KILLED");
             System.out.println("  CREATE ALIEN <x> <y> <puntos>");
             System.out.println("  CREATE UFO <direccion> <puntos>");

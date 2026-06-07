@@ -257,8 +257,16 @@ public class GameState extends GameSubject {
         return false;
     }
     public synchronized boolean isGameOver(){
-
         return gameOver;
+    }
+
+    // Se activa cuando el cliente C detecta que los aliens llegaron al nivel del cañón
+    public synchronized void aliensLlegaronBase() {
+        if (!gameOver) {
+            gameOver = true;
+            System.out.println("Los aliens llegaron al jugador. Game Over.");
+            notifyObservers();
+        }
     }
     public synchronized void createUFO(int x, int y, String direction, int points) {
         ufo = gameElementFactory.createUFO(nextUfoId++, x, y, direction, points);
