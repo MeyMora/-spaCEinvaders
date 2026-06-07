@@ -68,9 +68,9 @@ public class GameState extends GameSubject {
     }
     //Metodo privado que crea los aliens iniciales del juego.
     private void createInitialAliens() {
-        createAlienWithoutNotify(1, 1, 10);
-        createAlienWithoutNotify(2, 1, 20);
-        createAlienWithoutNotify(3, 1, 40);
+        aliens.add(gameElementFactory.createCalamarAlien(nextAlienId++, 1, 1));
+        aliens.add(gameElementFactory.createCangrejoAlien(nextAlienId++, 2, 1));
+        aliens.add(gameElementFactory.createPulpoAlien(nextAlienId++, 3, 1));
     }
 
     // Metodo sincronizado que agrega un nuevo jugador al juego.
@@ -244,7 +244,7 @@ public class GameState extends GameSubject {
 
         return gameOver;
     }
-    public synchronized void createUFO(int id, int x, int y,String direction, int points) {
+    public synchronized void createUFO(int x, int y, String direction, int points) {
         ufo = gameElementFactory.createUFO(nextUfoId++, x, y, direction, points);
         notifyObservers();
     }

@@ -220,7 +220,7 @@ public class ClientHandler extends GameObserver implements Runnable {
             try {
                 String direction = parts[2];
                 int points = Integer.parseInt(parts[3]);
-                gameState.createUFO(1, 0, 0, direction, points);
+                gameState.createUFO(0, 0, direction, points);
                 System.out.println("OVNI creado con direccion " + direction + " y " + points + " puntos");
             } catch (NumberFormatException e) {
                 System.out.println("Parámetros de OVNI inválidos: " + message);
