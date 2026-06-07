@@ -24,13 +24,17 @@ public class TestClientInteractive {
             );
 
             System.out.println("Cliente interactivo conectado.");
-            System.out.println("Escriba comandos como:");
-            System.out.println("MOVE LEFT");
-            System.out.println("MOVE RIGHT");
-            System.out.println("ALIEN KILLED 1");
-            System.out.println("PLAYER HIT");
-            System.out.println("SPEED 150");
-            System.out.println("BUNKERS 70");
+            System.out.println("Comandos disponibles:");
+            System.out.println("  MOVE LEFT");
+            System.out.println("  MOVE RIGHT");
+            System.out.println("  ALIEN KILLED <id>");
+            System.out.println("  PLAYER HIT");
+            System.out.println("  BUNKER HIT <id>");
+            System.out.println("  UFO KILLED");
+            System.out.println("  CREATE ALIEN <x> <y> <puntos>");
+            System.out.println("  CREATE UFO <direccion> <puntos>");
+            System.out.println("  SPEED <velocidad>");
+            System.out.println("  BUNKERS <salud>");
             System.out.println();
 
             Thread listener = new Thread(() -> {

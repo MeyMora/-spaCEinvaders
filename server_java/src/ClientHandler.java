@@ -1,4 +1,4 @@
-import Modelos.GameState;
+import Logica.GameState;
 import Modelos.Player;
 
 import java.io.BufferedReader;
@@ -6,8 +6,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.List;
-import Patrones.GameObserver;
-import Patrones.ThreadExecutorSingleton;
+import Patrones.Observer.GameObserver;
+import Patrones.Singlenton.ThreadExecutorSingleton;
 
 public class ClientHandler extends GameObserver implements Runnable {
 
@@ -224,6 +224,20 @@ public class ClientHandler extends GameObserver implements Runnable {
                 System.out.println("OVNI creado con direccion " + direction + " y " + points + " puntos");
             } catch (NumberFormatException e) {
                 System.out.println("Parámetros de OVNI inválidos: " + message);
+            }
+        }
+
+        else if (parts.length == 3 && parts[0].equals("BUNKER") && parts[1].equals("HIT")) {
+            try {
+                int bunkerId = Integer.parseInt(parts[2]);
+                boolean hit = gameState.hitBunker(bunkerId);
+                if (hit) {
+                    System.out.println("Bunker " + bunkerId + " recibió daño");
+                } else {
+                    System.out.println("Bunker " + bunkerId + " no encontrado o ya destruido");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("ID de bunker inválido: " + message);
             }
         }
 

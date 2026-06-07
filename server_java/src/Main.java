@@ -1,4 +1,5 @@
-import Modelos.GameState;
+import Logica.GameState;
+import Patrones.Singlenton.ThreadExecutorSingleton;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -17,8 +18,10 @@ public class Main {
 
     public static void main(String[] args) {
 
+        ServerSocket serverSocket = null;
+
         try {
-            ServerSocket serverSocket = new ServerSocket(PORT);
+            serverSocket = new ServerSocket(PORT);
 
             System.out.println("Servidor iniciado en puerto " + PORT);
 
@@ -32,11 +35,19 @@ public class Main {
                         new ClientHandler(clientSocket, gameState, clients);
 
                 clients.add(clientHandler);
-                clientHandler.start();
             }
 
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            ThreadExecutorSingleton.getInstance().shutdown();
+            if (serverSocket != null) {
+                try {
+                    serverSocket.close();
+                } catch (Exception e) {
+                    System.out.println("No se pudo cerrar el servidor");
+                }
+            }
         }
     }
 }

@@ -1,9 +1,14 @@
-package Modelos;
+package Logica;
 
 import java.util.ArrayList;
 import java.util.List;
-import Patrones.GameObserver;
-import Patrones.GameSubject;
+
+import Modelos.Alien;
+import Modelos.Bunker;
+import Modelos.Player;
+import Modelos.UFO;
+import Patrones.Observer.GameObserver;
+import Patrones.Observer.GameSubject;
 
 import Patrones.AbstractFactory.GameElementFactory;
 import Patrones.AbstractFactory.ClassicGameElementFactory;
@@ -239,6 +244,17 @@ public class GameState extends GameSubject {
             bunker.setHealth(health);
         }
         notifyObservers();
+    }
+
+    public synchronized boolean hitBunker(int bunkerId) {
+        for (Bunker bunker : bunkers) {
+            if (bunker.getId() == bunkerId && bunker.getHealth() > 0) {
+                bunker.damage(10);
+                notifyObservers();
+                return true;
+            }
+        }
+        return false;
     }
     public synchronized boolean isGameOver(){
 

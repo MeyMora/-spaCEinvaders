@@ -1,4 +1,4 @@
-package Patrones;
+package Patrones.Observer;
 
 import java.util.ArrayList;
 import java.util.List;
