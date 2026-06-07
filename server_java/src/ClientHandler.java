@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.List;
 import Patrones.GameObserver;
-import Patrones.ThreadExecutor;
+import Patrones.ThreadExecutorSingleton;
 
 public class ClientHandler extends GameObserver implements Runnable {
 
@@ -59,7 +59,7 @@ public class ClientHandler extends GameObserver implements Runnable {
             }
             
             // Se ejecuta la tarea usando el Singleton ThreadExecutor
-            ThreadExecutor.getInstance().execute(this);
+            ThreadExecutorSingleton.getInstance().execute(this);
 
         } catch (Exception e) {
             e.printStackTrace();

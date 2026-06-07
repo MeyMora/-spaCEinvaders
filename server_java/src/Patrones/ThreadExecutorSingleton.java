@@ -4,18 +4,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 //Patrón Singleton que gestiona la ejecución de tareas en hilos
-public class ThreadExecutor {
-    private static ThreadExecutor instance;
+public class ThreadExecutorSingleton {
+    private static ThreadExecutorSingleton instance;
     private ExecutorService executor;
     private static final int THREAD_POOL_SIZE = 10;
 
-    private ThreadExecutor() {
+    private ThreadExecutorSingleton() {
         this.executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     }
 
-    public static synchronized ThreadExecutor getInstance() {
+    public static synchronized ThreadExecutorSingleton getInstance() {
         if (instance == null) {
-            instance = new ThreadExecutor();
+            instance = new ThreadExecutorSingleton();
         }
         return instance;
     }
@@ -30,4 +30,3 @@ public class ThreadExecutor {
         }
     }
 }
-
