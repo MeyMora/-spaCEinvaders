@@ -11,17 +11,17 @@ public class ClassicGameElementFactory extends GameElementFactory {
 
     @Override
     public Alien createCalamarAlien(int id, int x, int y) {
-        return new CalamarAlien(id, x, y);
+        return new CalamarAlien(id, x, y, 10);
     }
 
     @Override
     public Alien createCangrejoAlien(int id, int x, int y) {
-        return new CangrejoAlien(id, x, y);
+        return new CangrejoAlien(id, x, y, 20);
     }
 
     @Override
     public Alien createPulpoAlien(int id, int x, int y) {
-        return new PulpoAlien(id, x, y);
+        return new PulpoAlien(id, x, y, 40);
     }
 
     @Override

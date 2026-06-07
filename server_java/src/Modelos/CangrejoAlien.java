@@ -2,7 +2,7 @@ package Modelos;
 
 public class CangrejoAlien extends Alien {
 
-    public CangrejoAlien(int id, int x, int y) {
+    public CangrejoAlien(int id, int x, int y, int points) {
         super(id, x, y, points);
     }
 

@@ -2,8 +2,8 @@ package Modelos;
 
 public class PulpoAlien extends Alien {
 
-    public PulpoAlien(int id, int x, int y) {
-        super(id, x, y, 40);
+    public PulpoAlien(int id, int x, int y, int points) {
+        super(id, x, y, points);
     }
 
     @Override
