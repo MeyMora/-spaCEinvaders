@@ -184,49 +184,6 @@ public class ClientHandler extends GameObserver implements Runnable {
             System.out.println("Jugador " + player.getId() + " recibió daño");
         }
 
-        else if (parts.length == 2 && parts[0].equals("SPEED")) {
-            try {
-                int newSpeed = Integer.parseInt(parts[1]);
-                gameState.setAlienSpeed(newSpeed);
-                System.out.println("Velocidad cambiada a " + newSpeed);
-            } catch (NumberFormatException e) {
-                System.out.println("Valor de velocidad inválido: " + parts[1]);
-            }
-        }
-
-        else if (parts.length == 2 && parts[0].equals("BUNKERS")) {
-            try {
-                int health = Integer.parseInt(parts[1].replace("%", ""));
-                gameState.setBunkersHealth(health);
-                System.out.println("Estado de bunkers cambiado a " + health + "%");
-            } catch (NumberFormatException e) {
-                System.out.println("Valor de bunker inválido: " + parts[1]);
-            }
-        }
-
-        else if (parts.length == 5 && parts[0].equals("CREATE") && parts[1].equals("ALIEN")) {
-            try {
-                int x = Integer.parseInt(parts[2]);
-                int y = Integer.parseInt(parts[3]);
-                int points = Integer.parseInt(parts[4]);
-                gameState.createAlien(x, y, points);
-                System.out.println("Alien creado en (" + x + ", " + y + ") con " + points + " puntos");
-            } catch (NumberFormatException e) {
-                System.out.println("Parámetros de alien inválidos: " + message);
-            }
-        }
-
-        else if (parts.length == 4 && parts[0].equals("CREATE") && parts[1].equals("UFO")) {
-            try {
-                String direction = parts[2];
-                int points = Integer.parseInt(parts[3]);
-                gameState.createUFO(0, 0, direction, points);
-                System.out.println("OVNI creado con direccion " + direction + " y " + points + " puntos");
-            } catch (NumberFormatException e) {
-                System.out.println("Parámetros de OVNI inválidos: " + message);
-            }
-        }
-
         else if (parts.length == 3 && parts[0].equals("BUNKER") && parts[1].equals("HIT")) {
             try {
                 int bunkerId = Integer.parseInt(parts[2]);

@@ -75,5 +75,18 @@ public class Player { // Es como el molde para crear jugadores
         lives++; // Aumenta la vida en 1.
     }
 
+    // Metodo que resetea la posicion del jugador al centro
+    public void resetPosition(){
+        x = 50;
+    }
+
+    // Metodo que resetea las vidas y el puntaje del jugador al estado inicial
+    public void resetGame(){
+        lives = 3;
+        score = 0;
+        alive = true;
+        x = 50;
+    }
+
 
 }

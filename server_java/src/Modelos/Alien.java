@@ -21,6 +21,16 @@ public abstract class Alien {
         return id;
     }
 
+    // Metodo que devuelve la posicion horizontal del alien
+    public int getX() {
+        return x;
+    }
+
+    // Metodo que devuelve la posicion vertical del alien
+    public int getY() {
+        return y;
+    }
+
     // Metodo que devuelve los puntos que vale el alien
     public int getPoints() {
         return points;

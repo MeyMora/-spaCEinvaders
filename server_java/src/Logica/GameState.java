@@ -87,9 +87,15 @@ public class GameState extends GameSubject {
     }
 
     //Metodo sincronizado que crea un nuevo alien
-    public synchronized void createAlien(int x, int y, int points) {
+    public synchronized boolean createAlien(int x, int y, int points) {
+        for (Alien alien : aliens) {
+            if (alien.isAlive() && alien.getX() == x && alien.getY() == y) {
+                return false;
+            }
+        }
         createAlienWithoutNotify(x, y, points);
         notifyObservers();
+        return true;
     }
 
     // Metodo sincronizado que mueve un jugador hacia la izquierda.
@@ -173,7 +179,7 @@ public class GameState extends GameSubject {
             message.append(alien.toMessage()).append(" ");
         }
 
-        // Se agrega la informacion de cada buker al mensaje
+        // Se agrega la informacion de cada bunker al mensaje
         for (Bunker bunker : bunkers) {
             message.append(bunker.toMessage()).append(" ");
         }
@@ -216,14 +222,17 @@ public class GameState extends GameSubject {
         alienSpeed += 20;
 
         // A partir de cierta velocidad se cambia la familia de objetos del juego.
-        // Esto permite que los nuevos elementos creados por la fábrica tengan otra configuración.
-        // Por ejemplo, en HardGameElementFactory los bunkers pueden iniciar con menos vida.
         if (alienSpeed >= 140) {
             gameElementFactory = new HardGameElementFactory();
         }
 
         aliens.clear();
         bunkers.clear();
+        ufo = null;
+
+        for (Player p : players) {
+            p.resetPosition();
+        }
 
         createInitialAliens();
         createInitialBunkers();
@@ -267,6 +276,30 @@ public class GameState extends GameSubject {
             System.out.println("Los aliens llegaron al jugador. Game Over.");
             notifyObservers();
         }
+    }
+
+    // Reinicia el juego completamente al estado inicial
+    public synchronized void restartGame() {
+        gameOver = false;
+        alienSpeed = 100;
+        nextAlienId = 1;
+        nextUfoId = 1;
+        ufo = null;
+        gameElementFactory = new ClassicGameElementFactory();
+
+        for (Player player : players) {
+            player.resetPosition();
+            player.resetGame();
+        }
+
+        aliens.clear();
+        bunkers.clear();
+
+        createInitialAliens();
+        createInitialBunkers();
+
+        System.out.println("Juego reiniciado.");
+        notifyObservers();
     }
     public synchronized void createUFO(int x, int y, String direction, int points) {
         ufo = gameElementFactory.createUFO(nextUfoId++, x, y, direction, points);
