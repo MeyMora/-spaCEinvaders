@@ -43,6 +43,16 @@ public abstract class Alien {
     public void kill(){
         this.alive = false; // Cambia el estado del alien a muerto
     }
+
+    // Metodo que mueve el alien horizontalmente
+    public void moveHorizontal(int direction) {
+        x += direction;
+    }
+
+    // Metodo que mueve el alien hacia abajo
+    public void moveDown() {
+        y++;
+    }
     //Metodo que devuelve un texto con la informacion del alien, retorna una cadena de texto
     public String toMessage() {
         return "ALIEN " + id +" "+x + " " + y + " " +points + " " + alive ;

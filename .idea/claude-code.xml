@@ -3,5 +3,6 @@
   <component name="ClaudeCodeSettings">
     <option name="effort" value="high" />
     <option name="claudePath" value="C:\Users\Meibel\AppData\Roaming\npm\claude.cmd" />
+    <option name="alwaysAllowTools" value="Edit" />
   </component>
 </project>

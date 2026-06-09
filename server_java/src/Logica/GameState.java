@@ -13,6 +13,7 @@ import Patrones.Observer.GameSubject;
 import Patrones.AbstractFactory.GameElementFactory;
 import Patrones.AbstractFactory.ClassicGameElementFactory;
 import Patrones.AbstractFactory.HardGameElementFactory;
+import java.util.Random;
 
 
 public class GameState extends GameSubject {
@@ -40,6 +41,17 @@ public class GameState extends GameSubject {
 
     private GameElementFactory gameElementFactory;
 
+    // Direccion actual del movimiento de los aliens (1=derecha, -1=izquierda)
+    private int alienDirection = 1;
+
+    // Hilo del game loop
+    private Thread gameLoopThread;
+
+    // Contador de ticks para el spawn del UFO
+    private int ufoTickCounter = 0;
+    private int ufoSpawnInterval;
+    private final Random random = new Random();
+
 
     //Constructor de la clase modelos.GameState.
     //Aqui se inicializan las listas y los valores iniciales del juego.
@@ -48,7 +60,6 @@ public class GameState extends GameSubject {
         players = new ArrayList<>(); // Lista de juegadores
         aliens = new ArrayList<>();  // Lista de Aliens
         bunkers = new ArrayList<>(); // Lista de bunkers
-
 
         // Se define la familia inicial de objetos del juego
         gameElementFactory = new ClassicGameElementFactory();
@@ -61,6 +72,8 @@ public class GameState extends GameSubject {
 
         createInitialBunkers(); // Se crean los bunkers iniciales.
         createInitialAliens();  // Se crean los aliens iniciales.
+        ufoSpawnInterval = 30 + random.nextInt(31); // Entre 30 y 60 ticks
+        startGameLoop();        // Inicia el loop del juego.
     }
     // Metodo privado que crea los bunkers iniciales del juego
     private void createInitialBunkers() {
@@ -229,6 +242,7 @@ public class GameState extends GameSubject {
         aliens.clear();
         bunkers.clear();
         ufo = null;
+        alienDirection = 1;
 
         for (Player p : players) {
             p.resetPosition();
@@ -285,10 +299,12 @@ public class GameState extends GameSubject {
         nextAlienId = 1;
         nextUfoId = 1;
         ufo = null;
+        alienDirection = 1;
+        ufoTickCounter = 0;
+        ufoSpawnInterval = 30 + random.nextInt(31);
         gameElementFactory = new ClassicGameElementFactory();
 
         for (Player player : players) {
-            player.resetPosition();
             player.resetGame();
         }
 
@@ -300,6 +316,7 @@ public class GameState extends GameSubject {
 
         System.out.println("Juego reiniciado.");
         notifyObservers();
+        startGameLoop();
     }
     public synchronized void createUFO(int x, int y, String direction, int points) {
         ufo = gameElementFactory.createUFO(nextUfoId++, x, y, direction, points);
@@ -360,5 +377,95 @@ public class GameState extends GameSubject {
         return alien;
     }
 
+    // Inicia el hilo del game loop
+    private void startGameLoop() {
+        if (gameLoopThread != null && gameLoopThread.isAlive()) {
+            gameLoopThread.interrupt();
+        }
+        gameLoopThread = new Thread(() -> {
+            while (!gameOver) {
+                try {
+                    int delay = Math.max(50, 1000 - alienSpeed * 5);
+                    Thread.sleep(delay);
+                    if (!gameOver) {
+                        gameLoopTick();
+                    }
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        });
+        gameLoopThread.setDaemon(true);
+        gameLoopThread.start();
+    }
+
+    // Un tick del game loop: mueve aliens y UFO, controla spawn del UFO, luego notifica
+    private synchronized void gameLoopTick() {
+        moveAliens();
+        moveUFO();
+        checkUFOSpawn();
+        notifyObservers();
+    }
+
+    // Verifica si es momento de generar un nuevo UFO automaticamente
+    private void checkUFOSpawn() {
+        if (ufo != null && ufo.isActive()) {
+            ufoTickCounter = 0;
+            return;
+        }
+        ufoTickCounter++;
+        if (ufoTickCounter >= ufoSpawnInterval) {
+            generarUFO();
+            ufoTickCounter = 0;
+            ufoSpawnInterval = 30 + random.nextInt(31);
+        }
+    }
+
+    // Genera un UFO con direccion y puntos aleatorios
+    private void generarUFO() {
+        String direction = random.nextBoolean() ? "I-D" : "D-I";
+        int points = 50 + random.nextInt(451); // Entre 50 y 500 puntos
+        int startX = direction.equals("I-D") ? 0 : 100;
+        ufo = gameElementFactory.createUFO(nextUfoId++, startX, 0, direction, points);
+        System.out.println("OVNI aparecio con direccion " + direction + " y " + points + " puntos");
+    }
+
+    // Mueve todos los aliens vivos. Si llegan al borde bajan una fila y cambian direccion
+    private void moveAliens() {
+        boolean hitBoundary = false;
+
+        for (Alien alien : aliens) {
+            if (!alien.isAlive()) continue;
+            int newX = alien.getX() + alienDirection;
+            if (newX <= 0 || newX >= 100) {
+                hitBoundary = true;
+                break;
+            }
+        }
+
+        if (hitBoundary) {
+            alienDirection *= -1;
+            for (Alien alien : aliens) {
+                if (!alien.isAlive()) continue;
+                alien.moveDown();
+                if (alien.getY() >= 80 && !gameOver) {
+                    gameOver = true;
+                    System.out.println("Los aliens llegaron a la base. Game Over.");
+                }
+            }
+        } else {
+            for (Alien alien : aliens) {
+                if (alien.isAlive()) {
+                    alien.moveHorizontal(alienDirection);
+                }
+            }
+        }
+    }
+
+    // Mueve el UFO si esta activo
+    private void moveUFO() {
+        if (ufo == null || !ufo.isActive()) return;
+        ufo.move();
+    }
 
 }

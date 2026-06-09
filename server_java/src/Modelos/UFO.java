@@ -44,8 +44,10 @@ public class UFO {
     public void move(){
         if (direction.equals("I-D")){
             x++;
+            if (x > 100) active = false;
         }else if(direction.equals("D-I")){
-            active = false;
+            x--;
+            if (x < 0) active = false;
         }
     }
 
