@@ -13,205 +13,130 @@ import Patrones.Observer.GameSubject;
 import Patrones.AbstractFactory.GameElementFactory;
 import Patrones.AbstractFactory.ClassicGameElementFactory;
 import Patrones.AbstractFactory.HardGameElementFactory;
-import java.util.Random;
-
 
 public class GameState extends GameSubject {
-    // Lista que guarda todos los jugadores conectados al juego.
+
     private List<Player> players;
-
-    // Lista que guarda todos los aliens del juego
-    private List<Alien> aliens;
-
-    // Lista que guarda todos los bunkers del juego
     private List<Bunker> bunkers;
-
-    //Velocidad actual de los aliens
     private int alienSpeed;
-
-    //Variable que controla el identificador del sigueinte alien que se cree
-    private int nextAlienId;
-
-    //Variable que controla si el jugador perdio o no.
     private boolean gameOver;
-
-    private UFO ufo;
-
-    private int nextUfoId;
-
     private GameElementFactory gameElementFactory;
 
-    // Direccion actual del movimiento de los aliens (1=derecha, -1=izquierda)
-    private int alienDirection = 1;
+    private AlienManager alienManager;
+    private UFOManager ufoManager;
+    private GameLoop gameLoop;
 
-    // Hilo del game loop
-    private Thread gameLoopThread;
-
-    // Contador de ticks para el spawn del UFO
-    private int ufoTickCounter = 0;
-    private int ufoSpawnInterval;
-    private final Random random = new Random();
-
-
-    //Constructor de la clase modelos.GameState.
-    //Aqui se inicializan las listas y los valores iniciales del juego.
     public GameState() {
-        super();  // Inicializa la lista de observers
-        players = new ArrayList<>(); // Lista de juegadores
-        aliens = new ArrayList<>();  // Lista de Aliens
-        bunkers = new ArrayList<>(); // Lista de bunkers
+        super();
+        players = new ArrayList<>();
+        bunkers = new ArrayList<>();
 
-        // Se define la familia inicial de objetos del juego
         gameElementFactory = new ClassicGameElementFactory();
+        alienManager = new AlienManager(gameElementFactory);
+        ufoManager = new UFOManager(gameElementFactory);
+        gameLoop = new GameLoop(this);
 
-        alienSpeed = 100; // Velocidad inicial de los aliens.
-        nextAlienId = 1;  // El primer alien tendra el id 1.
-        gameOver = false; // Se inicializa la perdida del juego en false.
-        nextUfoId = 1;
-        ufo = null;
+        alienSpeed = 100;
+        gameOver = false;
 
-        createInitialBunkers(); // Se crean los bunkers iniciales.
-        createInitialAliens();  // Se crean los aliens iniciales.
-        ufoSpawnInterval = 30 + random.nextInt(31); // Entre 30 y 60 ticks
-        startGameLoop();        // Inicia el loop del juego.
+        createInitialBunkers();
+        alienManager.createInitialAliens();
+        gameLoop.iniciar();
     }
-    // Metodo privado que crea los bunkers iniciales del juego
+
     private void createInitialBunkers() {
-        // Se crean los 4 bunkers o escudos de proteccion que indica la descripcion de juego
-            bunkers.add(gameElementFactory.createBunker(1, 10, 20));
-            bunkers.add(gameElementFactory.createBunker(2, 30, 20));
-            bunkers.add(gameElementFactory.createBunker(3, 50, 20));
-            bunkers.add(gameElementFactory.createBunker(4, 70, 20));
-
-    }
-    //Metodo privado que crea los aliens iniciales del juego.
-    private void createInitialAliens() {
-        aliens.add(gameElementFactory.createCalamarAlien(nextAlienId++, 1, 1));
-        aliens.add(gameElementFactory.createCangrejoAlien(nextAlienId++, 2, 1));
-        aliens.add(gameElementFactory.createPulpoAlien(nextAlienId++, 3, 1));
+        bunkers.add(gameElementFactory.createBunker(1, 10, 20));
+        bunkers.add(gameElementFactory.createBunker(2, 30, 20));
+        bunkers.add(gameElementFactory.createBunker(3, 50, 20));
+        bunkers.add(gameElementFactory.createBunker(4, 70, 20));
     }
 
-    // Metodo sincronizado que agrega un nuevo jugador al juego.
-    // synchronized evita problemas si varios clientes intentan modificar el estado al mismo tiempo.
     public synchronized Player addPlayer() {
-        Player player = new Player(players.size() +1);  // Se crea un jugador con un id segun la cantidad actual de jugadores.
-        players.add(player); // Se agrega un jugador a la lista
-        return player; // Se devuelve el jugador creado
+        Player player = new Player(players.size() + 1);
+        players.add(player);
+        return player;
     }
 
-    //Metodo sincronizado que crea un nuevo alien
     public synchronized boolean createAlien(int x, int y, int points) {
-        for (Alien alien : aliens) {
-            if (alien.isAlive() && alien.getX() == x && alien.getY() == y) {
-                return false;
-            }
-        }
-        createAlienWithoutNotify(x, y, points);
-        notifyObservers();
-        return true;
+        boolean created = alienManager.createAlien(x, y, points);
+        if (created) notifyObservers();
+        return created;
     }
 
-    // Metodo sincronizado que mueve un jugador hacia la izquierda.
-    public synchronized void movePlayerLeft(int playerId){
-        Player player = getPlayerById(playerId); // Se busca el jugador por su id.
-
-        if (player != null) { // Si el jugador existe, se mueve a la izquierda
+    public synchronized void movePlayerLeft(int playerId) {
+        Player player = getPlayerById(playerId);
+        if (player != null) {
             player.moveLeft();
             notifyObservers();
         }
     }
 
-    //Metodo sincronizado que mueve un jugador hacia la derecha.
-    public synchronized void movePlayerRight(int playerId){
-        Player player = getPlayerById(playerId); // Se busca el jugador por su id.
-
-        if (player != null) { // Si el jugador existe, se mueve a la derecha.
+    public synchronized void movePlayerRight(int playerId) {
+        Player player = getPlayerById(playerId);
+        if (player != null) {
             player.moveRight();
             notifyObservers();
         }
     }
 
-    //Metodo sincronizado que permite eliminar un alien y sume puntos al jugador
-    public synchronized boolean killAlien(int playerId, int alienId){
-        Player player = getPlayerById(playerId); // Se busca el jugadorp por su id
-        Alien alien = getAlienById(alienId); // Se busca el alien por su id.
+    public synchronized boolean killAlien(int playerId, int alienId) {
+        Player player = getPlayerById(playerId);
+        Alien alien = alienManager.getAlienById(alienId);
 
-        // Se verifica que el jugador exista, que el alien exista y que el alien este vivo.
-        if(player != null && alien != null && alien.isAlive() && !gameOver) {
-            alien.kill(); // Se marca el alien como muerto.
-            player.addScore(alien.getPoints()); // Se suma los puntos del alien al jugador.
+        if (player != null && alien != null && alien.isAlive() && !gameOver) {
+            alien.kill();
+            player.addScore(alien.getPoints());
 
-            if (allAliensDead()){
+            if (alienManager.allAliensDead()) {
                 resetRound(player);
-            }else{
+            } else {
                 notifyObservers();
             }
             return true;
-
         }
         return false;
     }
 
-    // Metodo privado que busca un jugador por su id.
     private Player getPlayerById(int playerId) {
         for (Player player : players) {
-            if (player.getId() == playerId) {
-                return player; // Si encuentra el jugador, lo devuelve
-            }
+            if (player.getId() == playerId) return player;
         }
-        return null; // Si no lo encuentra, devuelve null.
+        return null;
     }
 
-    // Metodo privado que busca un alien por su id.
-    private Alien getAlienById(int alienId) {
-        for (Alien alien : aliens) {
-            if (alien.getId() == alienId) {
-                return alien; // Si encuentra el alien, lo devuelve.
-            }
-        }
-        return null; // Si no lo encuentra, devuelve nulo.
-    }
-
-    // Metodo sincronizado que genera un mensaje con el estado actual del juego.
     public synchronized String getStateMessage() {
-        StringBuilder message = new StringBuilder(); //Se usa para construir el mensaje de forma eficiente.
-        message.append("STATE: "); // Indica que el mensaje contiene el estado del juego.
+        StringBuilder message = new StringBuilder();
+        message.append("STATE: ");
 
-        // Se agrega la informacion de cada jugador al mensaje
         for (Player player : players) {
-            message.append("PLAYER ") // Mensaje del jugador
-                    .append(player.getId()).append(" ") // Id del jugador
-                    .append(player.getX()).append(" ")  // Posicion del jugador
-                    .append(player.getLives()).append(" ") // Vidas del jugador
-                    .append(player.getScore()).append(" "); //Puntaje del jugador
-
+            message.append("PLAYER ")
+                    .append(player.getId()).append(" ")
+                    .append(player.getX()).append(" ")
+                    .append(player.getLives()).append(" ")
+                    .append(player.getScore()).append(" ");
         }
 
-        // Se agrega la informacion de cada alien al mensaje.
-        for (Alien alien : aliens) {
+        for (Alien alien : alienManager.getAliens()) {
             message.append(alien.toMessage()).append(" ");
         }
 
-        // Se agrega la informacion de cada bunker al mensaje
         for (Bunker bunker : bunkers) {
             message.append(bunker.toMessage()).append(" ");
         }
+
+        UFO ufo = ufoManager.getUFO();
         if (ufo != null) {
             message.append(ufo.toMessage()).append(" ");
         }
 
-
-        // Se agrega la velocidad actual de los aliens
         message.append("SPEED ").append(alienSpeed).append(" ");
         message.append("GAME_OVER ").append(gameOver);
 
-        // Se devuelve el mensaje como texto.
         return message.toString();
-
     }
+
     public synchronized void playerHit(int playerId) {
         Player player = getPlayerById(playerId);
-
         if (player != null && !gameOver) {
             player.loseLife();
             if (player.getLives() <= 0) {
@@ -220,48 +145,39 @@ public class GameState extends GameSubject {
             notifyObservers();
         }
     }
-    private boolean allAliensDead() {
-        for (Alien alien : aliens) {
-            if (alien.isAlive()) {
-                return false;
-            }
-        }
 
-        return true;
-    }
     private void resetRound(Player player) {
         player.addLife();
-
         alienSpeed += 20;
 
-        // A partir de cierta velocidad se cambia la familia de objetos del juego.
         if (alienSpeed >= 140) {
             gameElementFactory = new HardGameElementFactory();
+            alienManager.setFactory(gameElementFactory);
+            ufoManager.setFactory(gameElementFactory);
         }
 
-        aliens.clear();
         bunkers.clear();
-        ufo = null;
-        alienDirection = 1;
+        alienManager.resetRonda();
+        ufoManager.resetRonda();
 
         for (Player p : players) {
             p.resetPosition();
         }
 
-        createInitialAliens();
         createInitialBunkers();
-
-        System.out.println(
-                "Ronda completada. Nueva velocidad: " + alienSpeed +
-                        ". Nueva vida de bunkers: " + getBunkersHealthMessage()
-        );
-
+        System.out.println("Ronda completada. Nueva velocidad: " + alienSpeed);
         notifyObservers();
     }
+
     public synchronized void setAlienSpeed(int alienSpeed) {
         this.alienSpeed = alienSpeed;
         notifyObservers();
     }
+
+    public int getAlienSpeed() {
+        return alienSpeed;
+    }
+
     public synchronized void setBunkersHealth(int health) {
         for (Bunker bunker : bunkers) {
             bunker.setHealth(health);
@@ -279,11 +195,31 @@ public class GameState extends GameSubject {
         }
         return false;
     }
-    public synchronized boolean isGameOver(){
+
+    public synchronized boolean isGameOver() {
         return gameOver;
     }
 
-    // Se activa cuando el cliente C detecta que los aliens llegaron al nivel del cañón
+    public synchronized void createUFO(int x, int y, String direction, int points) {
+        ufoManager.createUFO(x, y, direction, points);
+        notifyObservers();
+    }
+
+    public synchronized boolean destroyUFO(int playerId) {
+        Player player = getPlayerById(playerId);
+        if (player != null && ufoManager.isUFOActive() && !gameOver) {
+            int points = ufoManager.destroyUFO();
+            player.addScore(points);
+            notifyObservers();
+            return true;
+        }
+        return false;
+    }
+
+    public synchronized int getPlayerCount() {
+        return players.size();
+    }
+
     public synchronized void aliensLlegaronBase() {
         if (!gameOver) {
             gameOver = true;
@@ -292,55 +228,39 @@ public class GameState extends GameSubject {
         }
     }
 
-    // Reinicia el juego completamente al estado inicial
     public synchronized void restartGame() {
         gameOver = false;
         alienSpeed = 100;
-        nextAlienId = 1;
-        nextUfoId = 1;
-        ufo = null;
-        alienDirection = 1;
-        ufoTickCounter = 0;
-        ufoSpawnInterval = 30 + random.nextInt(31);
         gameElementFactory = new ClassicGameElementFactory();
+
+        alienManager.setFactory(gameElementFactory);
+        ufoManager.setFactory(gameElementFactory);
 
         for (Player player : players) {
             player.resetGame();
         }
 
-        aliens.clear();
         bunkers.clear();
-
-        createInitialAliens();
+        alienManager.reiniciar();
+        ufoManager.reiniciar();
         createInitialBunkers();
 
         System.out.println("Juego reiniciado.");
         notifyObservers();
-        startGameLoop();
+        gameLoop.iniciar();
     }
-    public synchronized void createUFO(int x, int y, String direction, int points) {
-        ufo = gameElementFactory.createUFO(nextUfoId++, x, y, direction, points);
+
+    // Llamado por GameLoop en cada tick del juego
+    public synchronized void tick() {
+        boolean aliensLlegaron = alienManager.moverAliens();
+        if (aliensLlegaron && !gameOver) {
+            gameOver = true;
+            System.out.println("Los aliens llegaron a la base. Game Over.");
+        }
+        ufoManager.moverUFO();
+        ufoManager.verificarSpawnUFO();
         notifyObservers();
     }
-
-    public synchronized boolean destroyUFO(int playerId) {
-        Player player = getPlayerById(playerId);
-
-        if (player != null && ufo != null && ufo.isActive() && !gameOver) {
-            ufo.destroy();
-            player.addScore(ufo.getPoints());
-
-            notifyObservers();
-            return true;
-        }
-
-        return false;
-    }
-
-    public synchronized int getPlayerCount() {
-        return players.size();
-    }
-
 
     @Override
     public void notifyObservers() {
@@ -356,116 +276,4 @@ public class GameState extends GameSubject {
             observer.update(stateMessage);
         }
     }
-
-    private String getBunkersHealthMessage() {
-        StringBuilder message = new StringBuilder();
-
-        for (Bunker bunker : bunkers) {
-            message.append("Bunker ")
-                    .append(bunker.getId())
-                    .append(": ")
-                    .append(bunker.getHealth())
-                    .append(" | ");
-        }
-
-        return message.toString();
-    }
-
-    private Alien createAlienWithoutNotify(int x, int y, int points) {
-        Alien alien = gameElementFactory.createAlienByPoints(nextAlienId++, x, y, points);
-        aliens.add(alien);
-        return alien;
-    }
-
-    // Inicia el hilo del game loop
-    private void startGameLoop() {
-        if (gameLoopThread != null && gameLoopThread.isAlive()) {
-            gameLoopThread.interrupt();
-        }
-        gameLoopThread = new Thread(() -> {
-            while (!gameOver) {
-                try {
-                    int delay = Math.max(50, 1000 - alienSpeed * 5);
-                    Thread.sleep(delay);
-                    if (!gameOver) {
-                        gameLoopTick();
-                    }
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        });
-        gameLoopThread.setDaemon(true);
-        gameLoopThread.start();
-    }
-
-    // Un tick del game loop: mueve aliens y UFO, controla spawn del UFO, luego notifica
-    private synchronized void gameLoopTick() {
-        moveAliens();
-        moveUFO();
-        checkUFOSpawn();
-        notifyObservers();
-    }
-
-    // Verifica si es momento de generar un nuevo UFO automaticamente
-    private void checkUFOSpawn() {
-        if (ufo != null && ufo.isActive()) {
-            ufoTickCounter = 0;
-            return;
-        }
-        ufoTickCounter++;
-        if (ufoTickCounter >= ufoSpawnInterval) {
-            generarUFO();
-            ufoTickCounter = 0;
-            ufoSpawnInterval = 30 + random.nextInt(31);
-        }
-    }
-
-    // Genera un UFO con direccion y puntos aleatorios
-    private void generarUFO() {
-        String direction = random.nextBoolean() ? "I-D" : "D-I";
-        int points = 50 + random.nextInt(451); // Entre 50 y 500 puntos
-        int startX = direction.equals("I-D") ? 0 : 100;
-        ufo = gameElementFactory.createUFO(nextUfoId++, startX, 0, direction, points);
-        System.out.println("OVNI aparecio con direccion " + direction + " y " + points + " puntos");
-    }
-
-    // Mueve todos los aliens vivos. Si llegan al borde bajan una fila y cambian direccion
-    private void moveAliens() {
-        boolean hitBoundary = false;
-
-        for (Alien alien : aliens) {
-            if (!alien.isAlive()) continue;
-            int newX = alien.getX() + alienDirection;
-            if (newX <= 0 || newX >= 100) {
-                hitBoundary = true;
-                break;
-            }
-        }
-
-        if (hitBoundary) {
-            alienDirection *= -1;
-            for (Alien alien : aliens) {
-                if (!alien.isAlive()) continue;
-                alien.moveDown();
-                if (alien.getY() >= 80 && !gameOver) {
-                    gameOver = true;
-                    System.out.println("Los aliens llegaron a la base. Game Over.");
-                }
-            }
-        } else {
-            for (Alien alien : aliens) {
-                if (alien.isAlive()) {
-                    alien.moveHorizontal(alienDirection);
-                }
-            }
-        }
-    }
-
-    // Mueve el UFO si esta activo
-    private void moveUFO() {
-        if (ufo == null || !ufo.isActive()) return;
-        ufo.move();
-    }
-
 }
