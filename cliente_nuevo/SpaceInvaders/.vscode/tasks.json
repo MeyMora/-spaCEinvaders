@@ -1,0 +1,75 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compilar",
+            "type": "shell",
+            "command": "gcc",
+            "args": [
+                 "src/main.c",
+    "src/network.c",
+    "src/pico_input.c",
+    "src/gameplay.c",
+    "src/game_state.c",
+    "src/menu.c",
+    "src/net_handler.c",
+    "src/renderer.c",
+                "-o",
+                "game.exe",
+                "-I",
+                "include",
+                "-I",
+                "raylib/include",
+                "-L",
+                "raylib/lib",
+                "-lraylib",
+                "-lws2_32",
+                "-lwinmm",
+                "-lgdi32",
+                "-lopengl32",
+                "-mwindows",
+                "-Wall",
+                "-g"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "Compilar y Ejecutar",
+            "type": "shell",
+            "command": "gcc src/main.c src/network.c -o game.exe -I include -I raylib/include -L raylib/lib -lraylib -lws2_32 -lwinmm -lgdi32 -lopengl32 -mwindows && ./game.exe",
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: gcc.exe compilar archivo activo",
+            "command": "C:/w64devkit/bin/gcc.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "C:/w64devkit/bin"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Tarea generada por el depurador."
+        }
+    ]
+}
